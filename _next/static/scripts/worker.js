@@ -276,6 +276,7 @@ const handleProcessLeaderboard = (data, realtime = false) => {
         [
           ...result.logs,
           ...Object.keys(result.securitys).reduce((a, b) => {
+            // if(['devices', 'ips', 'startAt', 'submitAt'].includes(b)) return (a = a.concat([]))
             if (b.includes('At')) return (a = a.concat([]))
             return (a = a.concat(result.securitys[b].map(it => ({ ...it, a: b }))))
           }, [])
@@ -284,7 +285,7 @@ const handleProcessLeaderboard = (data, realtime = false) => {
           id: result.ResultId,
           student: getNameStudent(result),
           label: getFirstCharName(getNameStudent(result)),
-          question: questionMap[item.id]
+          question: questionMap[item?.p?.id]
         }))
       )
       // logs = logs.concat(result.logs.map(item => ({ ...item, id: result.ResultId, student: getNameStudent(result) })))
@@ -412,6 +413,7 @@ const handleHistoryDetails = data => {
   let logs = [
     ...results.logs,
     ...Object.keys(results.securitys).reduce((a, b) => {
+      // if(['devices', 'ips', 'startAt', 'submitAt'].includes(b)) return (a = a.concat([]))
       if (b.includes('At')) return (a = a.concat([]))
       return (a = a.concat(results.securitys[b].map(it => ({ ...it, a: b }))))
     }, [])
@@ -432,6 +434,11 @@ const handleHistoryDetails = data => {
 const processLogRealtime = logs => {
   const getText = item => {
     switch (item.a) {
+      case 'devices':
+        return `Bạn <b style="color:red">${item.student}</b> đã truy cập bằng <b style="color:green">${item.n}</b>.`
+      case 'ips':
+        return `Bạn <b style="color:red">${item.student}</b> đã truy cập địa chỉ IP <b style="color:green">${item.n}</b>.`
+
       case 'left':
         return `Bạn <b style="color:red">${item.student}</b> đã nhấn chuột trái.`
       case 'right':
@@ -444,7 +451,23 @@ const processLogRealtime = logs => {
         return `Bạn <b style="color:red">${item.student}</b> đã quay trở lại màn hình làm bài.`
 
       case 'submit':
-        return `Bạn <b style="color:red">${item.student}</b> đã nộp bài thi.`
+        const textSubmit = s => {
+          switch (s) {
+            case 'teacher':
+              return 'GV buộc dừng'
+            case 'user':
+              return 'HS tự nộp'
+            case 'autotimeout':
+            case 'timeout':
+              return 'Hết giờ'
+            case 'tabs':
+              return 'Chuyển tabs'
+          }
+          return 'Chưa xác định'
+        }
+        return `Bạn <b style="color:red">${item.student}</b> đã nộp bài thi <b style="color:green">(${textSubmit(
+          item?.p?.s
+        )})</b>.`
       case 'start':
         return `Bạn <b style="color:red">${item.student}</b> đã bắt đầu làm bài thi.`
       case 'online':
@@ -590,6 +613,7 @@ const processLeaderboard = ({ exams, results }) => {
       [
         ...result.logs,
         ...Object.keys(result.securitys).reduce((a, b) => {
+          // if(['devices', 'ips', 'startAt', 'submitAt'].includes(b)) return (a = a.concat([]))
           if (b.includes('At')) return (a = a.concat([]))
           return (a = a.concat(result.securitys[b].map(it => ({ ...it, a: b }))))
         }, [])
@@ -611,6 +635,7 @@ const processLeaderboard = ({ exams, results }) => {
       student: getNameStudent(item),
       label: getFirstCharName(getNameStudent(item)),
       clientId: item.ClientId,
+      userToken: item.UserToken,
       status: item.status,
       startAt: item?.securitys?.startAt,
       taked: `${item?.details?.questions
@@ -756,6 +781,9 @@ const handleCheckErrorCreate = examsCurrent => {
 
   // Thông tin trong settings
   if (!settings.title.trim()) results.errors.push({ id: '', text: 'Tên đề thi không được để trống 😓' })
+  if (settings?.title?.trim()?.length < 10)
+    results.errors.push({ id: '', text: 'Tên đề thi tối thiểu phải có 10 ký tự 😓' })
+
   switch (settings.accept) {
     case 'all':
       !settings?.collects.length &&
