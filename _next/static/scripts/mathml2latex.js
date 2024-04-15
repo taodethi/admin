@@ -132,12 +132,15 @@ var MathML2LaTeX = (function () {
           const index = opSymbol.decimals.indexOf(charCode)
           if (index > -1) {
             if (padSpaceBothSide[i]) {
+              // console.log({ i, v: opSymbol.scripts[index], index, charCode })
               return [' ', opSymbol.scripts[index], ' '].join('')
             } else {
               return opSymbol.scripts[index] + ' '
             }
           }
         }
+
+        // console.log({ it })
         return it
       } else {
         return this.parseMathFunction(it)
@@ -784,7 +787,6 @@ var MathML2LaTeX = (function () {
                 parts.push(Brackets.parseLeft(op, stretchy))
                 lefts.push(op)
               } else {
-
                 console.error('bracket not match', op, children)
               }
             }
@@ -837,6 +839,8 @@ var MathML2LaTeX = (function () {
         break
       case 'munderover':
         render = getRender_default('@1\\limits_{@2}^{@3}')
+
+        // console.log(node, render)
         break
       case 'mmultiscripts':
         render = renderMmultiscripts
@@ -1055,7 +1059,6 @@ var MathML2LaTeX = (function () {
   }
 
   function renderTemplate(template, values) {
-    // console.log({values, template})
     return template.replace(/\@\d+/g, m => {
       const idx = parseInt(m.substring(1, m.length)) - 1
       return values[idx]
