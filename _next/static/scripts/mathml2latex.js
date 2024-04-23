@@ -111,6 +111,7 @@ var MathML2LaTeX = (function () {
     },
 
     parseOperator: function (it) {
+
       if (it.length === 0) {
         return ''
       }
@@ -125,6 +126,8 @@ var MathML2LaTeX = (function () {
           this.other
         ]
 
+
+        
         const padSpaceBothSide = [false, true, true, false, false, false]
 
         for (let i = 0; i < opSymbols.length; i++) {
@@ -132,7 +135,6 @@ var MathML2LaTeX = (function () {
           const index = opSymbol.decimals.indexOf(charCode)
           if (index > -1) {
             if (padSpaceBothSide[i]) {
-              // console.log({ i, v: opSymbol.scripts[index], index, charCode })
               return [' ', opSymbol.scripts[index], ' '].join('')
             } else {
               return opSymbol.scripts[index] + ' '
@@ -140,7 +142,6 @@ var MathML2LaTeX = (function () {
           }
         }
 
-        // console.log({ it })
         return it
       } else {
         return this.parseMathFunction(it)
@@ -778,7 +779,7 @@ var MathML2LaTeX = (function () {
                   parts.push(Brackets.parseLeft(op, stretchy))
                   lefts.push(op)
                 } else {
-                  console.error('bracket not match')
+                  // console.error('bracket not match')
                 }
               }
             } else {
@@ -787,7 +788,7 @@ var MathML2LaTeX = (function () {
                 parts.push(Brackets.parseLeft(op, stretchy))
                 lefts.push(op)
               } else {
-                console.error('bracket not match', op, children)
+                // console.error('bracket not match', op, children)
               }
             }
           } else {
@@ -819,13 +820,7 @@ var MathML2LaTeX = (function () {
         render = getRender_default('{@1}_{@2}')
         break
       case 'msup':
-        // var check = false
-        // node.childNodes.forEach(item => {
-        //   if ((item.tagName || '').toLowerCase() == nodeName) check = true
-        // })
-        // // render = check ? getRender(node.childNodes[0]) : getRender_default('@1^{@2}')
-        // console.log(node.childNodes)
-        // render = check ? getRender_default('(@1)^{@2}') : getRender_default('@1^{@2}')
+      
         render = getRender_default('{@1}^{@2}')
         break
       case 'msubsup':
@@ -840,7 +835,7 @@ var MathML2LaTeX = (function () {
       case 'munderover':
         render = getRender_default('@1\\limits_{@2}^{@3}')
 
-        // console.log(node, render)
+
         break
       case 'mmultiscripts':
         render = renderMmultiscripts
@@ -980,24 +975,24 @@ var MathML2LaTeX = (function () {
 
   function renderMover(node, children) {
     const nodes = flattenNodeTreeByNodeName(node, 'mover')
-    // console.log(nodes)
+
     let result = undefined
     for (let i = 0; i < nodes.length - 1; i++) {
       if (!result) {
         result = parse(nodes[i])
       }
       const over = parse(nodes[i + 1])
-      // console.log({ over, MathSymbol })
+
       const template = getMatchValueByChar({
         decimals: MathSymbol.overScript.decimals,
         values: MathSymbol.overScript.templates,
         judgeChar: over,
-        // defaultValue: "@1\\limits^{@2}"
+
         defaultValue: '\\overset{@2}{@1}'
       })
       result = renderTemplate(template.replace('@v', '@1'), [result, over])
     }
-    // console.log('result', result)
+
     return result
   }
 

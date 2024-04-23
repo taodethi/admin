@@ -219,7 +219,7 @@ const handleProcessLeaderboard = (data, realtime = false) => {
         right: 0,
         number: details.quizs[0].number,
         retake: result?.details?.Retake,
-        time: securitys.submitAt - securitys.startAt,
+        time: (securitys.submitAt ?? new Date().getTime()) - securitys.startAt,
         startAt: securitys.startAt,
         submitAt: securitys.submitAt,
         total: 0,
@@ -245,7 +245,6 @@ const handleProcessLeaderboard = (data, realtime = false) => {
           labels[lab[it]] = true
           overview[lab[it]] = result?.details?.Username[it]
         })
-
       }
 
       details?.collects?.forEach(it => {
@@ -270,7 +269,7 @@ const handleProcessLeaderboard = (data, realtime = false) => {
 
       statistic.total++
       statistic.points += overview.point
-      statistic.times += overview.time
+      statistic.times += isNaN(overview.time) ? 0 : overview.time
       return {
         ...result?.details,
         details,
@@ -412,7 +411,7 @@ const handleViewDetails = data => {
     },
     id,
     student: getNameStudent(results),
-    Username : results.Username
+    Username: results.Username
   }
   self.postMessage({ action: 'viewDetails', payload })
 }
@@ -576,7 +575,7 @@ const processLeaderboard = ({ exams, results }) => {
         right: 0,
         number: details.quizs[0].number,
         retake: result?.Retake,
-        time: (securitys.submitAt || new Date().getTime()) - securitys.startAt,
+        time: (securitys.submitAt ?? new Date().getTime()) - securitys.startAt,
         startAt: securitys.startAt,
         submitAt: securitys.submitAt,
         total: 0,
@@ -590,7 +589,6 @@ const processLeaderboard = ({ exams, results }) => {
         ip: securitys?.ips?.map(it => it.n) || []
       }
 
-      
       if (result?.Username) {
         var lab = {
           fullname: ' Họ và tên',
@@ -602,7 +600,6 @@ const processLeaderboard = ({ exams, results }) => {
           labels[lab[it]] = true
           overview[lab[it]] = result?.Username[it]
         })
-
       }
 
       details?.collects?.forEach(it => {
@@ -627,7 +624,7 @@ const processLeaderboard = ({ exams, results }) => {
 
       statistic.total++
       statistic.points += overview.point
-      statistic.times += overview.time
+      statistic.times += isNaN(overview.time) ? 0 : overview.time
       return {
         ...result,
         details,
@@ -965,7 +962,7 @@ const handleUpdateResult = data => {
         right: 0,
         number: details.quizs[0].number,
         retake: resultUpdate?.details?.Retake,
-        time: securitys.submitAt - securitys.startAt,
+        time: (securitys.submitAt ?? new Date().getTime()) - securitys.startAt,
         startAt: securitys.startAt,
         submitAt: securitys.submitAt,
         total: 0,
@@ -980,7 +977,6 @@ const handleUpdateResult = data => {
         ip: securitys?.ips?.map(it => it.n) || []
       }
 
-      
       if (resultUpdate?.Username) {
         var lab = {
           fullname: ' Họ và tên',
@@ -992,7 +988,6 @@ const handleUpdateResult = data => {
           labels[lab[it]] = true
           overview[lab[it]] = resultUpdate?.Username[it]
         })
-
       }
 
       details?.collects?.forEach(it => {
