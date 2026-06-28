@@ -412,7 +412,7 @@ const handleViewDetails = data => {
         var question = questionMap.get(item.id)
         if (!question) return { ...item }
         let { isTrue, point, options } = processQuestion(item, question)
-        var group = results.details.groups.find(it => it.id == question.groupId)
+        var group = (results.details.groups || []).find(it => it.id == question.groupId) || (leaderboard?.exams?.groups || []).find(it => it.id == question.groupId)
         return {
           ...question,
           isTrue,
@@ -435,30 +435,36 @@ const handleViewDetails = data => {
 }
 
 const handleBulkDetails = data => {
+  console.log('--- WORKER BẮT ĐẦU XỬ LÝ bulkDetails ---')
   const { selectedIds, leaderboard } = data
+  console.log('selectedIds:', selectedIds)
+  
   const resultMap = new Map(leaderboard.results.map(r => [r.ResultId, r]))
   const questionMap = new Map(leaderboard.exams.questions.map(q => [q.id, q]))
 
   const payload = selectedIds.map(id => {
     let results = resultMap.get(id)
-    if (!results) return null
+    if (!results) {
+      console.log('Không tìm thấy results cho id:', id)
+      return null
+    }
 
     return {
       overview: results.overview,
       details: {
         ...results.details,
-        questions: results.details.questions.map((item, index) => {
+        questions: (results.details?.questions || []).map((item, index) => {
           var question = questionMap.get(item.id)
           if (!question) return { ...item }
           let { isTrue, point, options } = processQuestion(item, question)
-          var group = results.details.groups.find(it => it.id == question.groupId)
+          var group = (results.details?.groups || []).find(it => it.id == question.groupId) || (leaderboard?.exams?.groups || []).find(it => it.id == question.groupId)
           return {
             ...question,
             isTrue,
             point,
             options,
             answers: item?.answers,
-            numberUser: group?.order ? group.questions.findIndex(it => it == item.id) + 1 : index + 1,
+            numberUser: group?.order ? (group.questions || []).findIndex(it => it == item.id) + 1 : index + 1,
             teacher: ['TL'].includes(question.type)
               ? parseFloat((results.details?.points || {})[question.id] || point)
               : undefined,
@@ -472,6 +478,7 @@ const handleBulkDetails = data => {
     }
   }).filter(Boolean)
 
+  console.log('--- WORKER ĐÃ XỬ LÝ XONG, TRẢ VỀ payload (số lượng: ' + payload.length + ') ---')
   self.postMessage({ action: 'bulkDetailsResult', payload })
 }
 
